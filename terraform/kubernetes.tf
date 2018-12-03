@@ -2,7 +2,7 @@ resource "google_container_cluster" "primary" {
   name               = "${var.cluster_name}"
   zone               = "europe-west2-a"
   initial_node_count = "${var.gcp_cluster_count}"
-  min_master_version = "1.11.3-gke.18"
+  min_master_version = "${var.kubernetes_version}"
 
   additional_zones = [
     "europe-west2-b",
