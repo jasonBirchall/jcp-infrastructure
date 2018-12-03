@@ -31,3 +31,8 @@ variable "gcp_region" {
   description = "GCP region"
   default     = "europe-west2"
 }
+
+variable "machine_type" {
+  description = "GCP machine type"
+  default     = "n1-standard-1"
+}
