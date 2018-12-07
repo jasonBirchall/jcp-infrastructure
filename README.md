@@ -22,7 +22,7 @@ If you require access to this cluster, please let me know via appropriate channe
 ## Table of contents
   * [Infrastructure Cost](#infrastructure-cost)
      * [Kops on AWS](#kops-on-aws)
-     * [Google Kubernetes Engine (GKE)](google-kubernetes-engine-gke)
+     * [Google Kubernetes Engine (GKE)](#google-kubernetes-engine-gke)
      * [Amazon Elastic Container Service for Kubernetes](#amazon-elastic-container-service-for-kubernetes)
      * [Comparison of potential cost](#comparison-of-potential-cost)
      * [Observations and potential biases](#observations-and-potential-biases)
