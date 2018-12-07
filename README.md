@@ -27,6 +27,7 @@ If you require access to this cluster, please let me know via appropriate channe
      * [Comparison of potential cost](#comparison-of-potential-cost)
      * [Observations and potential biases](#observations-and-potential-biases)
      * [Conclusion](#conclusion)
+  * [Terraform Support](#terraform-support)
 
 ## Infrastructure Cost
 In this section, I will compare the infrastructure cost of running Kubernetes via Kops on AWS, GKE, and EKS. I will try to ensure all comparisons are unbiased and offer the MoJ-Cloud-Platform the same memory allocation as `cloud-platform-live-0`. 
@@ -62,3 +63,17 @@ The above also only shows the node (formally worker node) price for Kops. Kops, 
 
 ### Conclusion
 All in all, I think GKE offers a cheaper Kubernetes solution to our current Kops and any potential move to EKS, with greater flexibility in node sizes. The bias concerns me and I would like to reconsider our current production setup before giving a clear indication of cost. 
+
+## Terraform Support
+Currently, the MoJ-Cloud-Platform uses Terraform to prepare and deploy a Cloud Platform environment fit for production. All `HCL` can be found in the [cloud-platform-infrastructure](https://github.com/ministryofjustice/cloud-platform-infrastructure) repository. 
+
+My work on this particular spike has proven that [Terraform](https://www.terraform.io/docs/providers/google/r/container_cluster.html) does support the provisioning and configuration of a GKE cluster. The `/terraform` dir contains `kubernetes.tf` that'll create a node-pool, configuring key configuration components such as [horizontal-autoscaling](https://cloud.google.com/blog/products/gcp/beyond-cpu-horizontal-pod-autoscaling-comes-to-google-kubernetes-engine?hl=th) and [automatic node update](https://cloud.google.com/kubernetes-engine/docs/how-to/node-auto-upgrades). 
+
+To use the Terraform current outlined in `./terraform`, you must first create a service account in GCP and place the accounts.json here `~/.gcp/accounts.json`. 
+
+Then you can init, plan and apply:
+```bash
+terraform init ./terraform
+terraform plan
+terraform apply
+```
