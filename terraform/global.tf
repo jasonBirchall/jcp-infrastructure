@@ -25,9 +25,9 @@ resource "google_dns_managed_zone" "platform" {
 }
 
 resource "google_dns_record_set" "platform" {
-  name  = "k8s.${google_dns_managed_zone.platform.dns_name}"
-  type  = "A"
-  ttl   = 300
+  name = "k8s.${google_dns_managed_zone.platform.dns_name}"
+  type = "A"
+  ttl  = 300
 
   managed_zone = "${google_dns_managed_zone.platform.name}"
 

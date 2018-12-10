@@ -62,6 +62,7 @@ resource "google_container_cluster" "primary" {
       start_time = "${var.maintenance_start_time}"
     }
   }
+
   lifecycle {
     ignore_changes = ["node_pool"]
   }
