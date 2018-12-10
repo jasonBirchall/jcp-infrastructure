@@ -39,6 +39,7 @@ resource "google_container_cluster" "primary" {
   name               = "${var.cluster_name}"
   zone               = "${var.zones[0]}"
   min_master_version = "${var.kubernetes_version}"
+  network            = "${google_compute_network.platform.name}"
   logging_service    = "${var.logging_service}"
   monitoring_service = "${var.monitoring_service}"
 
@@ -60,6 +61,9 @@ resource "google_container_cluster" "primary" {
     daily_maintenance_window {
       start_time = "${var.maintenance_start_time}"
     }
+  }
+  lifecycle {
+    ignore_changes = ["node_pool"]
   }
 
   addons_config {
