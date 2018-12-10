@@ -28,6 +28,7 @@ If you require access to this cluster, please let me know via appropriate channe
      * [Observations and potential biases](#observations-and-potential-biases)
      * [Conclusion](#conclusion)
   * [Terraform Support](#terraform-support)
+  * [Authentication](#authentication)
 
 ## Infrastructure Cost
 In this section, I will compare the infrastructure cost of running Kubernetes via Kops on AWS, GKE, and EKS. I will try to ensure all comparisons are unbiased and offer the MoJ-Cloud-Platform the same memory allocation as `cloud-platform-live-0`. 
@@ -77,3 +78,14 @@ terraform init ./terraform
 terraform plan
 terraform apply
 ```
+
+## Authentication
+GCP comes with multiple auth options. The option I'm going to focus this README on is [Securing Google Cloud Endpoints with Auth0](https://auth0.com/docs/integrations/google-cloud-platform#add-security-definitions) using our current provider Auth0. This basically allows you to add auth to your app endpoint. 
+
+### How we do auth currently
+Currently we use Auth0 to federate access to apps via an internal (namespace) OIDC proxy. This access is controlled by GitHub teams in the `MinistryOfJustice` organisation and allows teams admin permission to their own namespace and applications. For example, we have a Prometheus endpoint in the `monitoring` namespace that permits members of the `webops` github group access to dashboards and internal metrics. We expose this endpoint via the `envoy/oidc` proxy that lives in its namespace and is managed in the cluster. 
+
+### How we'd do auth with GCP
+It's actually A LOT more simple and integrated with GCP. After creating an Google Cloud Endpoint we add a security definition to our API forcing users through our Auth0 setup. This all managed in Terraform. I followed the instructions on the 
+
+### Differences and ease of use
