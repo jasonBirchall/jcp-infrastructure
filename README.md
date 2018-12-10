@@ -86,6 +86,8 @@ GCP comes with multiple auth options. The option I'm going to focus this README 
 Currently we use Auth0 to federate access to apps via an internal (namespace) OIDC proxy. This access is controlled by GitHub teams in the `MinistryOfJustice` organisation and allows teams admin permission to their own namespace and applications. For example, we have a Prometheus endpoint in the `monitoring` namespace that permits members of the `webops` github group access to dashboards and internal metrics. We expose this endpoint via the `envoy/oidc` proxy that lives in its namespace and is managed in the cluster. 
 
 ### How we'd do auth with GCP
-It's actually A LOT more simple and integrated with GCP. After creating an Google Cloud Endpoint we add a security definition to our API forcing users through our Auth0 setup. This all managed in Terraform. I followed the instructions on the 
+It's actually A LOT more simple and integrated with GCP. After creating an Google Cloud Endpoint we add a security definition to our API forcing users through our Auth0 setup. This all managed in Terraform. Auth0 has an interesting [document](https://auth0.com/docs/integrations/google-cloud-platform#add-security-definitions) and I followed this to get oauth via GitHub.
 
 ### Differences and ease of use
+Both recommended methods required the use of Auth0 to authenticate and auth against GitHub. GCP however has an integrated Identity-Aware-Proxy setting that allows you to manage all endpoints via the platform. AWS does not offer this so our current setup requires additional pods and services to proxy authentication. 
+
