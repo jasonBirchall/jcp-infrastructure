@@ -54,6 +54,33 @@ Provider | Machine type | Node count | Virtual CPUs | Memory GB | Price
 Same as [for GKE](https://github.com/jasonBirchall/jcp-infrastructure/#observations-and-potential-biases)
 
 ## Automation
-Currently, the MoJ-Cloud-Platform uses Terraform to prepare and deploy a Cloud Platform environment fit for production. All `HCL` can be found in the [cloud-platform-infrastructure](https://github.com/ministryofjustice/cloud-platform-infrastructure) repository.
 For Azure, TF support doesn't seem to have caught up with all features, especially interesting being (in preview) "virtual nodes"; we've used the native tooling (`Resources Manager` and `azure-cli`) instead.
-Following the wizard in the web interface [generates]() a (json) template, a variables file that can override values in the template, and a couple convenience scripts (bash, ps, ruby) to apply.
+Following the wizard in the web interface [generates](https://github.com/jasonBirchall/jcp-infrastructure/tree/aks/kube-test%20template) a (json) template, a parameters file that can override values in the template, and a couple convenience scripts (bash, ps, ruby) to apply.
+
+The first steps are generic for any Azure deployment:
+```
+$ az configure
+$ az login
+```
+A service account ('service principal' in Azure terminology) must be created 
+```
+$ az ad sp create-for-rbac --skip-assignment
+```
+and the `appId` and `password` edited in parameters.json
+The actual deployment is started with
+```
+./deploy.sh -i 6563cb1c-...-8f9b5c23cb40 -g kube-test -n kube-test -l westeurope
+```
+which in turn executes azure-cli
+```
+az group deployment create --name kube-test --resource-group kube-test --template-file template.json --parameters @parameters.json
+```
+deployment for a 3-node cluster takes ~5 minutes and the API endpoint will be by default an address like `kube-test-<random>.hcp.westeurope.azmk8s.io`
+Get the credentials for your cluster by running the following command:
+```
+az aks get-credentials --resource-group kube-test --name kube-test
+```
+Open the Kubernetes dashboard by running the following command:
+```
+az aks browse --resource-group kube-test --name kube-test
+```
