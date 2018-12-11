@@ -37,6 +37,7 @@ Kops helps you create, destroy, upgrade and maintain production-grade, highly av
 
 ### Azure Kubernetes Service (AKS)
 AKS GA in June 2018, feature-wise it might lag behind the other vendors but Microsoft promises to being commited, also investing in related products like [Helm](https://github.com/helm/), [Brigade](https://github.com/Azure/brigade) or [Draft](https://github.com/Azure/draft)
+
 The node size equivalent to Kops is the `E4s_v3` machine type. Recommended pool would be 6 nodes, with a resource pool of `24 vCPU` and `192 GB memory`. 
 
 *Source: https://azure.microsoft.com/en-us/pricing/calculator/*
@@ -73,14 +74,40 @@ The actual deployment is started with
 ```
 which in turn executes azure-cli
 ```
-az group deployment create --name kube-test --resource-group kube-test --template-file template.json --parameters @parameters.json
+ az group deployment create --name kube-test --resource-group kube-test --template-file template.json --parameters @parameters.json
 ```
 deployment for a 3-node cluster takes ~5 minutes and the API endpoint will be by default an address like `kube-test-<random>.hcp.westeurope.azmk8s.io`
+
 Get the credentials for your cluster by running the following command:
 ```
-az aks get-credentials --resource-group kube-test --name kube-test
+$ az aks get-credentials --resource-group kube-test --name kube-test
+```
+which merges the credentials in `~/.kube/config` and the usual commands apply:
+```
+$ kubectl --context kube-test get ns
+NAME          STATUS   AGE
+default       Active   38m
+kube-public   Active   38m
+kube-system   Active   38m
 ```
 Open the Kubernetes dashboard by running the following command:
 ```
-az aks browse --resource-group kube-test --name kube-test
+$ az aks browse --resource-group kube-test --name kube-test
+Proxy running on http://127.0.0.1:8001/
+Press CTRL+C to close the tunnel...
+Forwarding from [::1]:8001 -> 9090
+```
+With RBAC enabled, configuration is pretty locked-down, and user "system:serviceaccount:kube-system:kubernetes-dashboard" cannot display any useful info initially.
+
+As the setup wizard doesn't recommend enabling "HTTP application routing", an Nginx ingress is needed, done using Helm: https://docs.microsoft.com/en-us/azure/aks/ingress-tls
+```
+$ kubectl --context=kube-test create namespace ingress-controllers
+$ kubectl --context kube-test apply -f helm-rbac.yaml
+$ helm --kube-context=kube-test --tiller-namespace ingress-controllers --service-account tiller init
+# not sure what this means in a RBAC config: https://github.com/MicrosoftDocs/azure-docs/issues/5858
+$ helm --kube-context=kube-test --tiller-namespace ingress-controllers --name nginx-ingress install stable/nginx-ingress --namespace ingress-controllers --set controller.replicaCount=2
+$ kubectl --context kube-test -n ingress-controllers get service -l app=nginx-ingress
+NAME                            TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
+nginx-ingress-controller        LoadBalancer   10.0.72.116    <pending>     80:32267/TCP,443:31038/TCP   2m
+nginx-ingress-default-backend   ClusterIP      10.0.146.181   <none>        80/TCP                       2m
 ```
