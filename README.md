@@ -47,7 +47,7 @@ The below table outlines the resource allocation and *monthly* cost of running a
 Chosen memory-optimized instances as per [Jason's comment](https://github.com/jasonBirchall/jcp-infrastructure/#observations-and-potential-biases).
 
 Provider | Machine type | Node count | Virtual CPUs | Memory GB | Disk GB | Price
---- | --- | --- | --- | --- | --- |
+--- | --- | --- | --- | --- | --- | --- |
 `Kops` | [c4.2xlarge](https://calculator.s3.amazonaws.com/index.html) | 6 | 8 | 15 | 0 | $ 2090.64
 `AKS` | [E4s_v3](https://azure.microsoft.com/en-gb/pricing/details/virtual-machines/series/)| 6 | 4 | 32 | 64 | $ 1064.64
 
