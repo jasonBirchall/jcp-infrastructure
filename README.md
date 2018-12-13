@@ -29,6 +29,10 @@ If you require access to this cluster, please let me know via appropriate channe
      * [Conclusion](#conclusion)
   * [Terraform Support](#terraform-support)
   * [Authentication](#authentication)
+     * [How do we do auth currently](#how-we-do-auth-currently)
+     * [How we'd do auth with GCP](#how-wed-do-auth-with-gcp)
+     * [Differences and ease of use](#differences-and-ease-of-use)
+  * [logging and monitoring is done by ?](#logging-and-monitoring-is-done-by-?)
 
 ## Infrastructure Cost
 In this section, I will compare the infrastructure cost of running Kubernetes via Kops on AWS, GKE, and EKS. I will try to ensure all comparisons are unbiased and offer the MoJ-Cloud-Platform the same memory allocation as `cloud-platform-live-0`. 
@@ -83,11 +87,36 @@ terraform apply
 GCP comes with multiple auth options. The option I'm going to focus this README on is [Securing Google Cloud Endpoints with Auth0](https://auth0.com/docs/integrations/google-cloud-platform#add-security-definitions) using our current provider Auth0. This basically allows you to add auth to your app endpoint. 
 
 ### How we do auth currently
-Currently we use Auth0 to federate access to apps via an internal (namespace) OIDC proxy. This access is controlled by GitHub teams in the `MinistryOfJustice` organisation and allows teams admin permission to their own namespace and applications. For example, we have a Prometheus endpoint in the `monitoring` namespace that permits members of the `webops` github group access to dashboards and internal metrics. We expose this endpoint via the `envoy/oidc` proxy that lives in its namespace and is managed in the cluster. 
+Currently, we use Auth0 to federate access to apps via an internal (namespace) OIDC proxy. This access is controlled by GitHub teams in the `MinistryOfJustice` organisation and allows teams admin permission to their own namespace and applications. For example, we have a Prometheus endpoint in the `monitoring` namespace that permits members of the `webops` GitHub group access to dashboards and internal metrics. We expose this endpoint via the `envoy/oidc` proxy that lives in its namespace and is managed in the cluster. 
 
 ### How we'd do auth with GCP
-It's actually A LOT more simple and integrated with GCP. After creating an Google Cloud Endpoint we add a security definition to our API forcing users through our Auth0 setup. This all managed in Terraform. Auth0 has an interesting [document](https://auth0.com/docs/integrations/google-cloud-platform#add-security-definitions) and I followed this to get oauth via GitHub.
+It's actually A LOT more simple and integrated with GCP. After creating a Google Cloud Endpoint we add a security definition to our API forcing users through our Auth0 setup. This all managed in Terraform. Auth0 has an interesting [document](https://auth0.com/docs/integrations/google-cloud-platform#add-security-definitions) and I followed this to get OAuth via GitHub.
 
 ### Differences and ease of use
-Both recommended methods required the use of Auth0 to authenticate and auth against GitHub. GCP however has an integrated Identity-Aware-Proxy setting that allows you to manage all endpoints via the platform. AWS does not offer this so our current setup requires additional pods and services to proxy authentication. 
+Both recommended methods required the use of Auth0 to authenticate and auth against GitHub. GCP, however, has an integrated Identity-Aware-Proxy setting that allows you to manage all endpoints via the platform. AWS does not offer this, so our current setup requires additional pods and services to proxy authentication. 
 
+## logging and monitoring is done by ?
+There are multiple options in the monitoring and observability space. This section will cover the current moj Kubernetes monitoring implementation, GCP's "out of the box" monitoring and how they compare. 
+
+### Current monitoring and logging setup
+The moj-cloud-platform utilises the Prometheus-operator from core-os. It does this via the Terraform automation in the cloud-platform-infrastructure repository. Prometheus-operator bootstraps cluster monitoring and alerting basics, for example, when the API server hits a threshold it will trigger an alarm and display on a Grafana dashboard. It offers a highly customisable Helm chart to configure essentials like Slack and PagerDuty integration. 
+
+We also currently implement third-party solutions such as PagerDuty for our triggered alerting in high priority scenarios, and Pingdom for endpoint uptime monitoring. 
+
+Logging in the moj-cloud-platform is done via a fluentd daemonset. This installs an agent on all nodes scraping metrics and storing them in an Elasticsearch cluster hosted in AWS.  
+
+### Monitoring and logging on GCP/GKE
+Google Cloud Platform automatically implements Google Stackdriver, which enables a number of features including a debugger, alerting and uptime monitoring. Enabling these features in your GKE is simply a boolean switch in your configuration that defaults to true.
+
+Every GKE cluster also automatically installs and collects a basic set of metrics using Fluentd and provides you with a Stackdriver dashboard. It stores logs in Stackdrivers own log aggregation system. 
+
+There is also a Kubernetes specific dashboard enabled as an alpha feature. This feature is only enabled in an 'alpha' cluster and is covered in this [Medium](https://medium.com/google-cloud/new-stackdriver-monitoring-for-kubernetes-part-1-a296fa164694) article.
+
+### Monitoring comparison
+As we've automated most of the monitoring in the current cluster setup, I'll use the state before automation, using the default Helm chart values and Kubernetes objects. 
+
+#### Ease of installation
+By far, GCP offers an easier path to get from nothing to production ready monitoring. With a simple switch of a value logging and monitoring is enabled. Although fairly easy to implement Prometheus-operator via Helm, it still takes a bit of time to expose your endpoints and integrate with third party tools like Slack.
+
+#### Ease of use
+Both are fairly easy to use. I would argue that there is a steeper learning curve with Prometheus as it requires you to use `PromQL`, a functional expression language that lets the user select and aggregate time series data in real time. Stackdriver on the other hand is rather intuitive. 
