@@ -32,7 +32,12 @@ If you require access to this cluster, please let me know via appropriate channe
      * [How do we do auth currently](#how-we-do-auth-currently)
      * [How we'd do auth with GCP](#how-wed-do-auth-with-gcp)
      * [Differences and ease of use](#differences-and-ease-of-use)
-  * [logging and monitoring is done by ?](#logging-and-monitoring-is-done-by-?)
+  * [logging and monitoring is done by ?](#logging-and-monitoring-is-done-by-)
+     * [Current monitoring and logging setup](#current-monitoring-and-logging-setup)
+     * [Monitoring and logging on GCP/GKE](#monitoring-and-logging-on-gcpgke)
+     * [Monitoring comparison](#monitoring-comparison)
+        * [Ease of installation](#ease-of-installation)
+        * [Ease of use](#ease-of-use)
 
 ## Infrastructure Cost
 In this section, I will compare the infrastructure cost of running Kubernetes via Kops on AWS, GKE, and EKS. I will try to ensure all comparisons are unbiased and offer the MoJ-Cloud-Platform the same memory allocation as `cloud-platform-live-0`. 
